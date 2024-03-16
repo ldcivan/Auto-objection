@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全自动一斤鸭梨！</title>
+    <style>
+        @keyframes shake {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-5px, 5px); }
+            50% { transform: translate(5px, -5px); }
+            75% { transform: translate(-5px, -5px); }
+            100% { transform: translate(5px, 5px); }
+        }
+    
+        .shake-image {
+            display: inline-block;
+            animation: shake 0.15s steps(4) infinite; /* 持续抖动的动画，可根据需要调整持续时间 */
+        }
+    </style>
+</head>
+<body>
+    <h1>全自动一斤鸭梨！</h1>
+    <div id="status" onclick="getPermission()" style="color: red; font-weight: bold;">未连接到审判庭，请更换设备，iOS用户请点击此处授权连接到审判庭</div>
+    <div id="intro" style="color: blue;">说明：成步堂的国籍决定了他说什么语言！成步堂的激动度越高，你就需要用更大的力气展现自己的态度！</div>
+    <label for="audioSelect">选择成步堂国籍：</label>
+    <select id="audioSelect">
+        <option value="default">请选择</option>
+        <option value="ja">日本国</option>
+        <option value="zh">中国</option>
+        <option value="ja-plus">日本国Plus</option>
+        <option value="en">英吉利国</option>
+        <option value="de">德意志国</option>
+        <option value="fr">法兰西国</option>
+        <option value="kr">大韩民国</option>
+        <option value="es">西班牙国</option>
+        <option value="it">意大利国</option>
+        <!-- 添加更多组别选项 -->
+    </select>
+    
+    <div id="setting" style="display: none;">
+        <label for="thresholdRange">调整成步堂激动度：</label>
+        <input type="range" id="thresholdRange" min="10" max="30" value="18">
+        <br>
+        <label for="toggleObjectionText">是否自定义台词显示：</label>
+        <input type="checkbox" id="toggleObjectionText">
+        <input id="ObjectionTextarea" type="text" style="display: none;"><br>
+        <label for="toggleUploadImg">是否自定义图片：</label>
+        <input type="checkbox" id="toggleUploadImg">
+        <button id="uploadImageBtn" style="display: none;">上传图片</button><br>
+        <label for="toggleUploadAudio">是否自定义音频：</label>
+        <input type="checkbox" id="toggleUploadAudio">
+        <button id="uploadAudioBtn" style="display: none;">上传音频</button><br>
+    </div>
+    <button id="settingBtn" onclick="if(document.getElementById('setting').style.display === 'none') {document.getElementById('setting').style.display = 'inline'; document.getElementById('settingBtn').innerText = '收起设置';} else {document.getElementById('setting').style.display = 'none'; document.getElementById('settingBtn').innerText = '更多设置';}" style="display:block;">更多设置</button>
+    
+    <audio id="audio" src=""></audio>
+    <img id="image" class="shake-image" src="./img/ja.png" style="display: none; margin-top: 10px; max-width: 100%; max-height: 100%;">
+    <script>
+        //上传自定义图片音频
+        const toggleObjectionText = document.getElementById('toggleObjectionText');
+        const toggleUploadImg = document.getElementById('toggleUploadImg');
+        const toggleUploadAudio = document.getElementById('toggleUploadAudio');
+        const ObjectionTextarea = document.getElementById('ObjectionTextarea');
+        const uploadImageBtn = document.getElementById('uploadImageBtn');
+        const uploadAudioBtn = document.getElementById('uploadAudioBtn');
+        const image = document.getElementById('image');
+        const audio = document.getElementById('audio');
+        var objectionText = "異議あり！";
+
+        toggleObjectionText.addEventListener('change', function() {
+            if (toggleObjectionText.checked) {
+                ObjectionTextarea.style.display = 'inline';
+            } else {
+                ObjectionTextarea.style.display = 'none';
+            }
+        });
+
+        toggleUploadImg.addEventListener('change', function() {
+            if (toggleUploadImg.checked) {
+                uploadImageBtn.style.display = 'inline';
+            } else {
+                uploadImageBtn.style.display = 'none';
+            }
+        });
+        
+        toggleUploadAudio.addEventListener('change', function() {
+            if (toggleUploadAudio.checked) {
+                uploadAudioBtn.style.display = 'inline';
+            } else {
+                uploadAudioBtn.style.display = 'none';
+            }
+        });
+        
+        ObjectionTextarea.addEventListener('change', function() {
+            objectionText = ObjectionTextarea.value;
+        });
+
+        uploadImageBtn.addEventListener('click', function() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    image.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            };
+            fileInput.click();
+        });
+
+        uploadAudioBtn.addEventListener('click', function() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'audio/*';
+            fileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                audio.src = URL.createObjectURL(file);
+            };
+            fileInput.click();
+        });
+        
+        //以下是自动异议本体代码
+        var userAgent = navigator.userAgent;
+
+        // 判断条件，简单判断PC
+        if (userAgent.indexOf("Windows") > -1 || userAgent.indexOf("Macintosh") > -1) {
+            alert("您似乎在使用PC。在PC上，即使显示已连接到审判庭，也可能无法自动异议！");
+        }
+        
+        var permissionGot = false;
+        var onObjection = false;
+        function getPermission() {
+          if (
+            typeof window.DeviceMotionEvent !== 'undefined' &&
+            typeof window.DeviceMotionEvent.requestPermission === 'function' &&
+            !permissionGot &&
+            document.getElementById('status').innerText !== '审判庭已连接'
+          ) {
+            alert("iOS用户：正在将您连接到审判庭，请授权！");
+            window.DeviceMotionEvent.requestPermission()
+              .then(function(state) {
+                if ('granted' === state) {
+                  //用户同意授权
+                  permissionGot = true;
+                  console.log("iOS permission got");
+                } else {
+                  //用户拒绝授权
+                  alert('你拒绝连接到审判庭了，若要再次连接，请刷新页面面。')
+                }
+              })
+              .catch(function(err) {
+                alert('error: ' + err)
+              })
+          }
+        }
+        
+        var threshold = 18; // 默认阈值18
+        var audioFiles = {
+            "default": ["", "./img/ja.png",""],
+            "ja": ["./audio/ja.mp3", "./img/ja.png", "異議あり！"],
+            "zh": ["./audio/zh.mp3", "./img/ja.png", "异议！"],
+            "ja-plus": ["./audio/ja-plus.mp3", "./img/ja.png", "異議あり！"],
+            "en": ["./audio/en.mp3", "./img/ja.png", "Objection！"],
+            "de": ["./audio/de.mp3", "./img/ja.png", "Einspruch！"],
+            "fr": ["./audio/fr.mp3", "./img/ja.png", "Objection！"],
+            "kr": ["./audio/kr.mp3", "./img/ja.png", "이의 있음！"],
+            "es": ["./audio/es.mp3", "./img/ja.png", "Protesto！"],
+            "it": ["./audio/it.mp3", "./img/ja.png", "Obiezione！"],
+            // 添加更多组别及其对应音频与图片文件
+        };
+        
+        document.getElementById('thresholdRange').addEventListener('input', function() {
+            threshold = this.value;
+        });
+        
+        document.getElementById('audioSelect').addEventListener('change', function() {
+            var selectedGroup = this.value;
+            var selectedFiles = audioFiles[selectedGroup];
+            
+            if (!toggleUploadImg.checked) document.getElementById('audio').src = selectedFiles[0];
+            if (!toggleUploadAudio.checked) document.getElementById('image').src = selectedFiles[1];
+            if (!toggleObjectionText.checked) objectionText = selectedFiles[2];
+        });
+        
+        window.addEventListener('devicemotion', function(e) {
+            var acceleration = e.accelerationIncludingGravity;
+            console.log(acceleration);
+            
+            if ((Math.abs(acceleration.x) > threshold || Math.abs(acceleration.y) > threshold || Math.abs(acceleration.z) > threshold) && !onObjection) {
+                if (document.getElementById('audioSelect').value === "default") {
+                    alert("您还未指定哪国的成步堂进行辩护！");
+                } else {
+                    onObjection = true;
+                    document.getElementById('status').innerHTML = '<h2>' + objectionText + '</h2>';
+                    var audio = document.getElementById('audio');
+                    var image = document.getElementById('image');
+                    
+                    audio.play();
+                    image.style.display = 'block';
+                    
+                    setTimeout(function() {
+                        //audio.pause();
+                        image.style.display = 'none';
+                        document.getElementById('status').innerText = '审判庭已连接';
+                        onObjection = false;
+                    }, audio.duration * 1000 + 50);
+                }
+            } else if (document.getElementById('status').innerHTML !== ('<h2>' + objectionText + '</h2>')) {
+                document.getElementById('status').innerText = '审判庭已连接';
+            }
+        });
+        
+        window.addEventListener('devicemotion', function(e) {
+            if (!e.accelerationIncludingGravity) {
+                document.getElementById('status').innerText = '无法连接审判庭，请更换设备';
+            }
+        });
+    </script>
+</body>
+</html>
