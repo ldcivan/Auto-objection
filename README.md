@@ -11,3 +11,5 @@
 
 ### 感谢
 本项目所有灵感来自[bilibili@坎尤](https://space.bilibili.com/380054694)的视频[自动异议](https://www.bilibili.com/video/BV1Gm411R7tV)及视频下的评论，已获得原作者授权开源该web版本
+
+此外，你可以在这里获得原作者的最新releases：https://github.com/Canyu-Liu/objection
