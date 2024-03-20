@@ -8,16 +8,16 @@
     <title>全自动一斤鸭梨！</title>
     <style>
         @keyframes shake {
-            0% { transform: translate(0, 0); }
-            25% { transform: translate(-5px, 5px); }
-            50% { transform: translate(5px, -5px); }
-            75% { transform: translate(-5px, -5px); }
-            100% { transform: translate(5px, 5px); }
+            10%, 90% {transform: translate3d(-1px, +1px, 0);}
+            20%, 80% {transform: translate3d(+3px, -3px, 0);}
+            30%, 70% {transform: translate3d(-6px, +6px, 0);}
+            40%, 60% {transform: translate3d(+4px, -4px, 0);}
+            50%      {transform: translate3d(-6px, +6px, 0);}
         }
     
         .shake-image {
             display: inline-block;
-            animation: shake 0.15s steps(4) infinite; /* 持续抖动的动画，可根据需要调整持续时间 */
+            animation: shake 0.4s ease-in-out; /* 持续抖动的动画，可根据需要调整持续时间 */
         }
     </style>
 </head>
